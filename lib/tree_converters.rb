@@ -37,6 +37,12 @@ module EnhancerHelper
     a
   end
 
+  def chain(sexp, *processorClasses)
+    processorClasses.inject(sexp) do |memo, clas|
+      clas.new.process memo
+    end
+  end
+
   def needsEnhancing(clas, method)
     sexpNeedsEnhancing sexpOf clas, method
   end
@@ -61,11 +67,9 @@ module EnhancerHelper
     end
 
     def process_vcall(sexp)
-      if sexp[1] == :_
-        @needsEnhancing = true
-        return s
-      end
-      return s *sexp
+      return s *sexp unless sexp[1] == :_
+      @needsEnhancing = true
+      s()
     end
   end
 end
@@ -78,7 +82,8 @@ class VcallEnhancer < AbstractProcessor
   include EnhancerHelper
   def process_call(sexp)
     call, target, method, args = sexp
-    return s *sexp unless sexpNeedsEnhancing sexp
+    return s *sexp unless sexpNeedsEnhancing args
+    pp args
     ret = s(:iter, s(call, target, method), s(:dasgn_curr, :x), s(:dvar, :x))
     return ret
   end
@@ -92,8 +97,7 @@ class UnderscoreEnhancer
   def enhance(clas, method)
     sexp = sexpOf clas, method
     return unless sexpNeedsEnhancing sexp
-    result = VcallEnhancer.new.process sexp
-    strToEval = Ruby2Ruby.new.process Unifier.new.process result
-    clas.class_eval strToEval
+    clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
   end
+
 end

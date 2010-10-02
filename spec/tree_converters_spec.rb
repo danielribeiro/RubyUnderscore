@@ -25,11 +25,19 @@ class Input
   def simple
     [0].map _
   end
+
+  def methodCall
+    [0].map _.to_s
+  end
 end
 
 class Expected
   def simple
-    [0].map {|x| x}
+    [0].map { |x| x }
+  end
+
+  def methodCall
+    [0].map { |x| x.to_s }
   end
 end
 
@@ -42,7 +50,11 @@ describe 'TreeConverters' do
 
   def assert_same_after_enhancing(method)
     un.enhance Input, method
-    un.sexpOf(Input, method).should == un.sexpOf(Expected, method)
+    input = un.sexpOf Input, method
+    output = un.sexpOf Expected, method
+#    pp input
+#    pp output
+    input.should == output
     Input.new.send(method).should == Expected.new.send(method)
   end
 
@@ -55,6 +67,10 @@ describe 'TreeConverters' do
 
   it "should enhance a simple identity" do
     assert_same_after_enhancing :simple
+  end
+
+  xit "should enhance a simple method call" do
+    assert_same_after_enhancing :methodCall
   end
 end
 
