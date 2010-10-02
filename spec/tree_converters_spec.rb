@@ -29,6 +29,10 @@ class Input
   def methodCall
     [0].map _.to_s
   end
+
+  def longComplexMethodChain
+    [0].map _.to_i.to_s.center(40, '-').to_s
+  end
 end
 
 class Expected
@@ -38,6 +42,10 @@ class Expected
 
   def methodCall
     [0].map { |x| x.to_s }
+  end
+
+  def longComplexMethodChain
+    [0].map { |x| x.to_i.to_s.center(40, '-').to_s }
   end
 end
 
@@ -69,8 +77,12 @@ describe 'TreeConverters' do
     assert_same_after_enhancing :simple
   end
 
-  xit "should enhance a simple method call" do
+  it "should enhance a simple method call" do
     assert_same_after_enhancing :methodCall
+  end
+
+    it "should enhance a complex method chain" do
+    assert_same_after_enhancing :longComplexMethodChain
   end
 end
 
