@@ -131,14 +131,14 @@ class UnderscoreEnhancer
 
 end
 
-# Next test case: it has to be the closest (f)call to vcall_. calls with args to the _vcall,
+# Next test case: it has to be the closest fcall to vcall_. calls with args to the _vcall,
 # are just ignored
-class A
-  def x
-    [0].map _.to_i.to_s.center(40, '-').to_s
-  end
-end
-
-u = UnderscoreEnhancer.new
-pp u.sexpOf A, :x
+#class A
+#  def x
+#    invoke _.to_i
+#  end
+#end
+#
+#u = UnderscoreEnhancer.new
+#pp u.sexpOf A, :x
 #p A.new.x
