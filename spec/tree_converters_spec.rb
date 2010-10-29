@@ -1,5 +1,6 @@
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'tree_converters'
+require 'pp'
 
 class Checks
   def doesntNeedEnhancing
@@ -33,6 +34,10 @@ class Input
   def longComplexMethodChain
     [0].map _.to_i.to_s.center(40, '-').to_s
   end
+
+  def nested
+    ["1"].concat([0].map _.to_s)
+  end
 end
 
 class Expected
@@ -46,6 +51,10 @@ class Expected
 
   def longComplexMethodChain
     [0].map { |x| x.to_i.to_s.center(40, '-').to_s }
+  end
+
+  def nested
+    ["1"].concat([0].map { |x| x.to_s } )
   end
 end
 
@@ -81,8 +90,12 @@ describe 'TreeConverters' do
     assert_same_after_enhancing :methodCall
   end
 
-    it "should enhance a complex method chain" do
+  it "should enhance a complex method chain" do
     assert_same_after_enhancing :longComplexMethodChain
+  end
+
+  it "should enhance a complex nested chain" do
+    assert_same_after_enhancing :nested
   end
 end
 

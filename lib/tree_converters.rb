@@ -79,15 +79,23 @@ end
 
 
 class VcallEnhancer < AbstractProcessor
+  attr_accessor :lookingForVcall
 
   include EnhancerHelper
-  def processCallSexp(callSexp)
-    call, target, method, args = callSexp
+  def initialize
+    super
+    self.lookingForVcall = false
+  end
+
+  def processCallArgs(call, target, method, args)
     return s call, process(target), method unless args
     s call, process(target), method, process(args)
   end
 
-
+  def processCallSexp(callSexp)
+    call, target, method, args = callSexp
+    processCallArgs call, target, method, args
+  end
 
   def variableName
     :x
@@ -101,7 +109,10 @@ class VcallEnhancer < AbstractProcessor
   def process_call(sexp)
     call, target, method, args = sexp
     return processCallSexp sexp unless sexpNeedsEnhancing args
+    self.lookingForVcall = true
     processed = process args
+    return processCallArgs call, target, method, processed unless lookingForVcall
+    self.lookingForVcall = false
     return s(:iter, s(call, process(target), method), s(:dasgn_curr, variableName),
       processed[1])
   end
@@ -122,11 +133,12 @@ end
 
 # Next test case: it has to be the closest (f)call to vcall_. calls with args to the _vcall,
 # are just ignored
-#class A
-#  def x
-#    "str".invoke("t".invoke(_.name))
-#  end
-#end
-#
-#u = UnderscoreEnhancer.new
-#pp u.sexpOf A, :x
+class A
+  def x
+    [0].map _.to_i.to_s.center(40, '-').to_s
+  end
+end
+
+u = UnderscoreEnhancer.new
+pp u.sexpOf A, :x
+#p A.new.x
