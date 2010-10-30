@@ -109,31 +109,24 @@ class VcallEnhancer < AbstractProcessor
       enhancer.lookingForVcall sexp
     end
 
-    def variableName
-      enhancer.variableName
-    end
-
-
-    def processSelf(newArgs)
-      self.args = newArgs
-      regularEnhance
-    end
-
     def regularEnhance
-      return s *asArray unless args
-      s *asArray.push(process(args))
+      params = asArray
+      params.push(process(args)) if args
+      s *params
     end
 
     def enhance
       return regularEnhance unless sexpNeedsEnhancing args
       enhancer.lookingForVcall = true
-      newArgs = process args
-      return processSelf newArgs unless enhancer.lookingForVcall
+      self.args = process args
+      return regularEnhance unless enhancer.lookingForVcall
       enhancer.lookingForVcall = false
-      return s(:iter, s(*asArray), s(:dasgn_curr, variableName),
-        newArgs[1])
+      s :iter, s(*asArray), s(:dasgn_curr, enhancer.variableName), argumentList
     end
 
+    def argumentList
+      args[1]
+    end
 
 
     def deconstruct(sexp)
