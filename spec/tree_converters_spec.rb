@@ -22,7 +22,18 @@ class Checks
   end
 end
 
+module OutputHelper
+  def map(&block)
+    [0].map &block
+  end
+
+  def identity_of(arg)
+    arg
+  end
+end
+
 class Input
+  include OutputHelper
   def simple
     [0].map _
   end
@@ -38,9 +49,19 @@ class Input
   def nested
     ["1"].concat([0].map _.to_s)
   end
+
+  def fcall
+    map _.to_s
+  end
+
+  def multiple_fcall
+    identity_of map _.to_s
+  end
+
 end
 
 class Expected
+  include OutputHelper
   def simple
     [0].map { |x| x }
   end
@@ -56,6 +77,15 @@ class Expected
   def nested
     ["1"].concat([0].map { |x| x.to_s } )
   end
+
+  def fcall
+    map { |x| x.to_s }
+  end
+
+  def multiple_fcall
+    identity_of map { |x| x.to_s }
+    
+  end
 end
 
 describe 'TreeConverters' do
@@ -69,8 +99,8 @@ describe 'TreeConverters' do
     un.enhance Input, method
     input = un.sexpOf Input, method
     output = un.sexpOf Expected, method
-#    pp input
-#    pp output
+    #    pp input
+    #    pp output
     input.should == output
     Input.new.send(method).should == Expected.new.send(method)
   end
@@ -82,20 +112,11 @@ describe 'TreeConverters' do
     un.needsEnhancing(Checks, :alsoNeedsEnhacing).should be_true
   end
 
-  it "should enhance a simple identity" do
-    assert_same_after_enhancing :simple
-  end
-
-  it "should enhance a simple method call" do
-    assert_same_after_enhancing :methodCall
-  end
-
-  it "should enhance a complex method chain" do
-    assert_same_after_enhancing :longComplexMethodChain
-  end
-
-  it "should enhance a complex nested chain" do
-    assert_same_after_enhancing :nested
+  [:simple, :methodCall, :longComplexMethodChain, :nested, :fcall, :multiple_fcall].
+    each do |m|
+    it m.to_s do
+      assert_same_after_enhancing m
+    end
   end
 end
 

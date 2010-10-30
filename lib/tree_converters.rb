@@ -97,6 +97,16 @@ class VcallEnhancer < AbstractProcessor
     processCallArgs call, target, method, args
   end
 
+  def processFCallArgs(call, method, args)
+    return s call, method unless args
+    s call, method, process(args)
+  end
+
+  def processFCallSexp(callSexp)
+    call, method, args = callSexp
+    processFCallArgs call, method, args
+  end
+
   def variableName
     :x
   end
@@ -114,6 +124,17 @@ class VcallEnhancer < AbstractProcessor
     return processCallArgs call, target, method, processed unless lookingForVcall
     self.lookingForVcall = false
     return s(:iter, s(call, process(target), method), s(:dasgn_curr, variableName),
+      processed[1])
+  end
+
+  def process_fcall(sexp)
+    fcall, method, args = sexp
+    return processFCallSexp sexp unless sexpNeedsEnhancing args
+    self.lookingForVcall = true
+    processed = process args
+    return processFCallArgs fcall, method, processed unless lookingForVcall
+    self.lookingForVcall = false
+    return s(:iter, s(fcall, method), s(:dasgn_curr, variableName),
       processed[1])
   end
 
@@ -135,7 +156,7 @@ end
 # are just ignored
 #class A
 #  def x
-#    invoke _.to_i
+#    invoke go _.to_i
 #  end
 #end
 #
