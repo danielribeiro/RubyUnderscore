@@ -60,6 +60,10 @@ module EnhancerHelper
     return parser.needsEnhancing
   end
 
+  def assertSexpIs(sexp, type)
+    raise "Wrong sexp type: #{sexp.first}" unless sexp.first == type
+  end
+
   class EnhancerDetector < AbstractProcessor
     attr_reader :needsEnhancing
 
@@ -80,30 +84,109 @@ end
 
 class VcallEnhancer < AbstractProcessor
   attr_accessor :lookingForVcall
-
   include EnhancerHelper
+  public :s
+  class AbstractSexp
+    attr_reader :sexp, :enhancer
+
+    include EnhancerHelper
+    def initialize(sexp, enhancer)
+      assertSexpIs sexp, type
+      @sexp = sexp
+      @enhancer = enhancer
+      deconstruct sexp[1..-1]
+    end
+
+    def s(*args)
+      enhancer.s *args
+    end
+
+    def process(arg)
+      enhancer.process arg
+    end
+
+    def lookingForVcall(sexp)
+      enhancer.lookingForVcall sexp
+    end
+
+    def variableName
+      enhancer.variableName
+    end
+
+
+    def processSelf(newArgs)
+      self.args = newArgs
+      regularEnhance
+    end
+
+    def regularEnhance
+      return s *asArray unless args
+      s *asArray.push(process(args))
+    end
+
+    def enhance
+      return regularEnhance unless sexpNeedsEnhancing args
+      enhancer.lookingForVcall = true
+      newArgs = process args
+      return processSelf newArgs unless enhancer.lookingForVcall
+      enhancer.lookingForVcall = false
+      return s(:iter, s(*asArray), s(:dasgn_curr, variableName),
+        newArgs[1])
+    end
+
+
+
+    def deconstruct(sexp)
+      raise "subclass responsability"
+    end
+
+    def type
+      raise "subclass responsability"
+    end
+
+    def asArray
+      raise "subclass responsability"
+    end
+
+  end
+
+  class Fcall < AbstractSexp
+    attr_accessor :method, :args
+    def type
+      :fcall
+    end
+
+    def deconstruct(sexp)
+      @method, @args = sexp
+    end
+
+
+    def asArray
+      [type, method]
+    end
+
+
+  end
+
+  class Call < AbstractSexp
+    attr_accessor :method, :args, :target
+    def type
+      :call
+    end
+    
+    def deconstruct(sexp)
+      @target, @method, @args = sexp
+    end
+
+    def asArray
+      [type, process(target), method]
+    end
+
+  end
+
   def initialize
     super
     self.lookingForVcall = false
-  end
-
-  def processGenericCallSexp(callSexp)
-    if call? callSexp
-      call, target, method, args = callSexp
-      return processCallArgs call, target, method, args
-    end
-    call, method, args = callSexp
-    processFCallArgs call, method, args
-  end
-
-  def processCallArgs(call, target, method, args)
-    return s call, process(target), method unless args
-    s call, process(target), method, process(args)
-  end
-
-  def processFCallArgs(call, method, args)
-    return s call, method unless args
-    s call, method, process(args)
   end
 
   def variableName
@@ -124,36 +207,14 @@ class VcallEnhancer < AbstractProcessor
   end
 
   def changeGenericCall(sexp)
-    if call? sexp
-      call, target, method, args = sexp
-      return processGenericCallSexp sexp unless sexpNeedsEnhancing args
-      self.lookingForVcall = true
-      processed = process args
-      return processCallArgs call, target, method, processed unless lookingForVcall
-      self.lookingForVcall = false
-      return s(:iter, s(call, process(target), method), s(:dasgn_curr, variableName),
-        processed[1])
-    end
-    if fcall? sexp
-      fcall, method, args = sexp
-      return processGenericCallSexp sexp unless sexpNeedsEnhancing args
-      self.lookingForVcall = true
-      processed = process args
-      return processFCallArgs fcall, method, processed unless lookingForVcall
-      self.lookingForVcall = false
-      return s(:iter, s(fcall, method), s(:dasgn_curr, variableName),
-        processed[1])
-    end
-    raise "Unknown sexp: #{sexp.first}"
+    sexpClass(sexp.first).new(sexp, self).enhance
   end
 
   protected
-  def call?(sexp)
-    sexp.first == :call
-  end
-
-  def fcall?(sexp)
-    sexp.first == :fcall
+  def sexpClass(type)
+    return Call if type == :call
+    return Fcall if type == :fcall
+    raise "Unknown sexp: #{type}"
   end
 
 end
