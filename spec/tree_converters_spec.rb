@@ -2,6 +2,12 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'tree_converters'
 require 'pp'
 
+class Array
+  def mapProc(proc)
+    map &proc
+  end
+end
+
 class Checks
   def doesntNeedEnhancing
     (1..20).map do |i|
@@ -25,6 +31,10 @@ end
 module OutputHelper
   def map(&block)
     [0].map &block
+  end
+
+  def idblock(&block)
+    block
   end
 
   def identity_of(arg)
@@ -58,6 +68,14 @@ class Input
     identity_of map _.to_s
   end
 
+  def fcall_call_mix
+    identity_of [0].map _.to_s
+  end
+
+  def call_fcall_mix
+    [0].mapProc idblock _.to_s
+  end
+
 end
 
 class Expected
@@ -84,7 +102,14 @@ class Expected
 
   def multiple_fcall
     identity_of map { |x| x.to_s }
-    
+  end
+
+  def fcall_call_mix
+    identity_of [0].map { |x| x.to_s }
+  end
+
+  def call_fcall_mix
+    [0].mapProc idblock { |x| x.to_s }
   end
 end
 
@@ -112,7 +137,8 @@ describe 'TreeConverters' do
     un.needsEnhancing(Checks, :alsoNeedsEnhacing).should be_true
   end
 
-  [:simple, :methodCall, :longComplexMethodChain, :nested, :fcall, :multiple_fcall].
+  [:simple, :methodCall, :longComplexMethodChain, :nested,
+    :fcall, :multiple_fcall, :fcall_call_mix, :call_fcall_mix].
     each do |m|
     it m.to_s do
       assert_same_after_enhancing m

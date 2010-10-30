@@ -87,24 +87,23 @@ class VcallEnhancer < AbstractProcessor
     self.lookingForVcall = false
   end
 
+  def processGenericCallSexp(callSexp)
+    if call? callSexp
+      call, target, method, args = callSexp
+      return processCallArgs call, target, method, args
+    end
+    call, method, args = callSexp
+    processFCallArgs call, method, args
+  end
+
   def processCallArgs(call, target, method, args)
     return s call, process(target), method unless args
     s call, process(target), method, process(args)
   end
 
-  def processCallSexp(callSexp)
-    call, target, method, args = callSexp
-    processCallArgs call, target, method, args
-  end
-
   def processFCallArgs(call, method, args)
     return s call, method unless args
     s call, method, process(args)
-  end
-
-  def processFCallSexp(callSexp)
-    call, method, args = callSexp
-    processFCallArgs call, method, args
   end
 
   def variableName
@@ -117,25 +116,44 @@ class VcallEnhancer < AbstractProcessor
   end
 
   def process_call(sexp)
-    call, target, method, args = sexp
-    return processCallSexp sexp unless sexpNeedsEnhancing args
-    self.lookingForVcall = true
-    processed = process args
-    return processCallArgs call, target, method, processed unless lookingForVcall
-    self.lookingForVcall = false
-    return s(:iter, s(call, process(target), method), s(:dasgn_curr, variableName),
-      processed[1])
+    changeGenericCall sexp
   end
 
   def process_fcall(sexp)
-    fcall, method, args = sexp
-    return processFCallSexp sexp unless sexpNeedsEnhancing args
-    self.lookingForVcall = true
-    processed = process args
-    return processFCallArgs fcall, method, processed unless lookingForVcall
-    self.lookingForVcall = false
-    return s(:iter, s(fcall, method), s(:dasgn_curr, variableName),
-      processed[1])
+    changeGenericCall sexp
+  end
+
+  def changeGenericCall(sexp)
+    if call? sexp
+      call, target, method, args = sexp
+      return processGenericCallSexp sexp unless sexpNeedsEnhancing args
+      self.lookingForVcall = true
+      processed = process args
+      return processCallArgs call, target, method, processed unless lookingForVcall
+      self.lookingForVcall = false
+      return s(:iter, s(call, process(target), method), s(:dasgn_curr, variableName),
+        processed[1])
+    end
+    if fcall? sexp
+      fcall, method, args = sexp
+      return processGenericCallSexp sexp unless sexpNeedsEnhancing args
+      self.lookingForVcall = true
+      processed = process args
+      return processFCallArgs fcall, method, processed unless lookingForVcall
+      self.lookingForVcall = false
+      return s(:iter, s(fcall, method), s(:dasgn_curr, variableName),
+        processed[1])
+    end
+    raise "Unknown sexp: #{sexp.first}"
+  end
+
+  protected
+  def call?(sexp)
+    sexp.first == :call
+  end
+
+  def fcall?(sexp)
+    sexp.first == :fcall
   end
 
 end
