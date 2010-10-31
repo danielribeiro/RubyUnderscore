@@ -3,7 +3,7 @@ RubyUnderscore
 
 [Closures](http://metaphysicaldeveloper.wordpress.com/2009/05/02/closures-collections-and-some-functional-programming/)
 are very useful tools, and ruby
-[Enumerable](http://ruby-doc.org/core-1.8.7/fr_class_index.html) mixin makes them even
+[Enumerable](http://ruby-doc.org/core-1.8.7/classes/Enumerable.html) mixin makes them even
 more useful. 
 
 However, as you decompose more and more your iterations into a sequence of
