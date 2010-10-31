@@ -130,15 +130,15 @@ class VcallEnhancer < AbstractProcessor
 
 
     def deconstruct(sexp)
-      raise "subclass responsability"
+      raise "subclass responsibility"
     end
 
     def type
-      raise "subclass responsability"
+      raise "subclass responsibility"
     end
 
     def asArray
-      raise "subclass responsability"
+      raise "subclass responsibility"
     end
 
   end
