@@ -2,6 +2,14 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'tree_converters'
 require 'pp'
 
+# Making it simple to test.
+class VcallEnhancer
+  def variableName
+    :x
+  end
+end
+
+
 class Array
   def mapProc(proc)
     map &proc
@@ -138,8 +146,7 @@ describe 'TreeConverters' do
   end
 
   [:simple, :methodCall, :longComplexMethodChain, :nested,
-    :fcall, :multiple_fcall, :fcall_call_mix, :call_fcall_mix].
-    each do |m|
+    :fcall, :multiple_fcall, :fcall_call_mix, :call_fcall_mix].each do |m|
     it m.to_s do
       assert_same_after_enhancing m
     end

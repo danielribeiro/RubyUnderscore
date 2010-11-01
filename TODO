@@ -1,5 +1,13 @@
 - variables with name different than x
-- parser of ruby files
 - module
+- nested undescores
+(From groovy:)
+def list = [[[5], [6]], [[7], [8]]]
+list.each {it.each {it.add(2)} }
+println list
+>> [[[5, 2], [6, 2]], [[7, 2], [8, 2]]]
+
+
+- parser of ruby files
 - gem and publish
 - debug support

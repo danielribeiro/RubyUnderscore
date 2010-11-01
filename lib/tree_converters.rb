@@ -174,20 +174,25 @@ class VcallEnhancer < AbstractProcessor
     def asArray
       [type, process(target), method]
     end
-
   end
 
   def initialize
     super
+    @enhancementIndex = 0
     self.lookingForVcall = false
   end
 
   def variableName
-    :x
+    :"__vcall_enhancer_i#{@enhancementIndex}"
+  end
+
+  def incVar
+    @enhancementIndex += 1
   end
 
   def process_vcall(sexp)
     return s *sexp unless sexp[1] == :_
+    incVar
     s(:dvar, variableName)
   end
 
@@ -219,7 +224,8 @@ class UnderscoreEnhancer
   def enhance(clas, method)
     sexp = sexpOf clas, method
     return unless sexpNeedsEnhancing sexp
-    clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
+    arg = chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
+    clas.class_eval arg
   end
 
 end
@@ -229,9 +235,13 @@ end
 #class A
 #  def x
 #    invoke go _.to_i
+#    invoke go _.to_i
 #  end
 #end
-#
+#u = UnderscoreEnhancer.new
+#u.enhance(A, :x)
+#pp u.sexpOf A, :x
+
 #u = UnderscoreEnhancer.new
 #pp u.sexpOf A, :x
 #p A.new.x
