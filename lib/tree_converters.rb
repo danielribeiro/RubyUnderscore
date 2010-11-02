@@ -221,8 +221,7 @@ class UnderscoreEnhancer
   def enhance(clas, method)
     sexp = sexpOf clas, method
     return unless sexpNeedsEnhancing sexp
-    arg = chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
-    clas.class_eval arg
+    clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
   end
 
   def enhanceClass(clas)
@@ -242,7 +241,3 @@ end
 #u = UnderscoreEnhancer.new
 #u.enhance(A, :x)
 #pp u.sexpOf A, :x
-
-#u = UnderscoreEnhancer.new
-#pp u.sexpOf A, :x
-#p A.new.x

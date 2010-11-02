@@ -4,17 +4,18 @@ module RubyUnderscore
   module Base
     module ClassMethods
       def method_added(method_name)
-        UnderscoreEnhancer.new.enhance(self, method_name)
+        super
+        UnderscoreEnhancer.new.enhance self, method_name
+      end
+
+      def singleton_method_added(method_name)
+        super
+        metaclass = class << self; self; end
+        UnderscoreEnhancer.new.enhance metaclass, method_name
       end
     end
-
-    module InstanceMethods
-
-    end
-
     def self.included(receiver)
       receiver.extend         ClassMethods
-      receiver.send :include, InstanceMethods
     end
   end
 end

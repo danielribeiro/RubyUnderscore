@@ -6,11 +6,12 @@ require 'rake/rdoctask'
 require 'rake/testtask'
 require 'spec/rake/spectask'
 
+task :default => [:spec]
 spec = Gem::Specification.new do |s|
   s.name = 'RubyUnderscore'
   s.version = '0.0.1'
   s.has_rdoc = true
-  s.extra_rdoc_files = ['README', 'LICENSE']
+  s.extra_rdoc_files = ['README']
   s.summary = 'Your summary here'
   s.description = s.summary
   s.author = ''
@@ -30,14 +31,10 @@ end
 Rake::RDocTask.new do |rdoc|
   files =['README', 'LICENSE', 'lib/**/*.rb']
   rdoc.rdoc_files.add(files)
-  rdoc.main = "README" # page to start on
+  rdoc.main = "README.md" # page to start on
   rdoc.title = "RubyUnderscore Docs"
   rdoc.rdoc_dir = 'doc/rdoc' # rdoc output folder
   rdoc.options << '--line-numbers'
-end
-
-Rake::TestTask.new do |t|
-  t.test_files = FileList['test/**/*.rb']
 end
 
 Spec::Rake::SpecTask.new do |t|

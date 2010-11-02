@@ -1,12 +1,12 @@
-- modules that change instance/class methods
-- enclose all in module RubyUnderscore
 - nested undescores
 (From groovy:)
 def list = [[[5], [6]], [[7], [8]]]
 list.each {it.each {it.add(2)} }
 println list
 >> [[[5, 2], [6, 2]], [[7, 2], [8, 2]]]
+- enclose all in module RubyUnderscore
 
 - parser of ruby files
 - gem and publish
 - debug support
+- rdoc
