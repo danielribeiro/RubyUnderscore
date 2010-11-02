@@ -1,7 +1,4 @@
-#!/usr/bin/env ruby
-require 'pp'
-
-gem 'ParseTree', '=3.0.5'
+#gem 'ParseTree', '=3.0.5'
 require 'sexp_processor'
 require 'ruby2ruby'
 require 'unified_ruby'
@@ -226,6 +223,10 @@ class UnderscoreEnhancer
     return unless sexpNeedsEnhancing sexp
     arg = chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
     clas.class_eval arg
+  end
+
+  def enhanceClass(clas)
+    
   end
 
 end
