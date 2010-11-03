@@ -187,21 +187,16 @@ class VcallEnhancer < AbstractProcessor
 
   def initialize
     super
-    @enhancementIndex = 0
     self.vcallCount = nil
   end
 
   def variableName
-    :"__vcall_enhancer_i#{@enhancementIndex}"
+    :"__vcall_enhancer_i"
   end
 
-  def incVar
-    @enhancementIndex += 1
-  end
 
   def process_vcall(sexp)
     return s *sexp unless sexp[1] == :_
-    incVar
     s(:dvar, variableName)
   end
 
@@ -236,15 +231,3 @@ class UnderscoreEnhancer
     clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
   end
 end
-
-# Next test case: it has to be the closest fcall to vcall_. calls with args to the _vcall,
-# are just ignored
-#class A
-#  def x
-#    invoke go _.to_i
-#    invoke go _.to_i
-#  end
-#end
-#u = UnderscoreEnhancer.new
-#u.enhance(A, :x)
-#pp u.sexpOf A, :x

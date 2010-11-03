@@ -1,6 +1,5 @@
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'tree_converters'
-require 'pp'
 
 # Making it simple to test.
 class VcallEnhancer
@@ -88,6 +87,11 @@ class Input
     [[[:a00], [:a01]], [[:a10], [:a11]]].each(_.each(_.push(:last)))
   end
 
+  def hasItAll
+    identity_of [[[:a00], [:a01]], [[:a10], [:a11]]].each(_.each(_.push(:last)))
+    identity_of [0].map _.to_s
+  end
+
 end
 
 class Expected
@@ -127,6 +131,11 @@ class Expected
   def nested_enhancement_on_matrix
     [[[:a00], [:a01]], [[:a10], [:a11]]].each { |x| x.each { |x| x.push(:last)} }
   end
+
+    def hasItAll
+    identity_of [[[:a00], [:a01]], [[:a10], [:a11]]].each { |x| x.each { |x| x.push(:last)} }
+    identity_of [0].map { |x| x.to_s }
+  end
 end
 
 describe 'TreeConverters' do
@@ -140,8 +149,6 @@ describe 'TreeConverters' do
     un.enhance Input, method
     input = un.sexpOf Input, method
     output = un.sexpOf Expected, method
-    #    pp input
-    #    pp output
     input.should == output
     Input.new.send(method).should == Expected.new.send(method)
   end
@@ -162,8 +169,7 @@ describe 'TreeConverters' do
 
   [:simple, :methodCall, :longComplexMethodChain,
     :nested, :fcall, :multiple_fcall, :fcall_call_mix,
-    :call_fcall_mix, :nested_enhancement_on_matrix]
-    [:nested_enhancement_on_matrix].
+    :call_fcall_mix, :nested_enhancement_on_matrix, :hasItAll].
     each do |m|
     it m.to_s do
       assert_same_after_enhancing m
