@@ -1,4 +1,5 @@
 #gem 'ParseTree', '=3.0.5'
+require 'pp'
 require 'sexp_processor'
 require 'ruby2ruby'
 require 'unified_ruby'
@@ -51,10 +52,14 @@ module EnhancerHelper
   end
 
   def sexpNeedsEnhancing(sexp)
-    return false if sexp.nil?
+    sexpEnhancingCount(sexp) > 0
+  end
+
+  def sexpEnhancingCount(sexp)
+    return 0 if sexp.nil?
     parser = EnhancerDetector.new
     parser.process clone sexp
-    return parser.needsEnhancing
+    return parser.enhanceCount
   end
 
   def assertSexpIs(sexp, type)
@@ -62,17 +67,16 @@ module EnhancerHelper
   end
 
   class EnhancerDetector < AbstractProcessor
-    attr_reader :needsEnhancing
+    attr_reader :enhanceCount
 
     def initialize
       super
-      @needsEnhancing = false
+      @enhanceCount = 0
     end
 
     def process_vcall(sexp)
-      return s *sexp unless sexp[1] == :_
-      @needsEnhancing = true
-      s()
+      @enhanceCount += 1 if sexp[1] == :_
+      return s *sexp
     end
   end
 end
@@ -80,7 +84,7 @@ end
 
 
 class VcallEnhancer < AbstractProcessor
-  attr_accessor :lookingForVcall
+  attr_accessor :vcallCount
   include EnhancerHelper
   public :s
   class AbstractSexp
@@ -102,22 +106,30 @@ class VcallEnhancer < AbstractProcessor
       enhancer.process arg
     end
 
-    def lookingForVcall(sexp)
-      enhancer.lookingForVcall sexp
-    end
-
     def regularEnhance
       params = asArray
       params.push(process(args)) if args
       s *params
     end
 
+    def subtreeNeedsEnhance?
+      enhancer.vcallCount && enhancer.vcallCount > 0
+    end
+
+    def decVcallCount
+      enhancer.vcallCount -= 1
+    end
+
     def enhance
-      return regularEnhance unless sexpNeedsEnhancing args
-      enhancer.lookingForVcall = true
+      count = sexpEnhancingCount args
+      return regularEnhance unless count > 0
+      enhancer.vcallCount = count if enhancer.vcallCount.nil?
       self.args = process args
-      return regularEnhance unless enhancer.lookingForVcall
-      enhancer.lookingForVcall = false
+      if enhancer.vcallCount == 0
+        enhancer.vcallCount = nil
+      end
+      return regularEnhance unless subtreeNeedsEnhance?
+      decVcallCount
       s :iter, s(*asArray), s(:dasgn_curr, enhancer.variableName), argumentList
     end
 
@@ -176,7 +188,7 @@ class VcallEnhancer < AbstractProcessor
   def initialize
     super
     @enhancementIndex = 0
-    self.lookingForVcall = false
+    self.vcallCount = nil
   end
 
   def variableName
@@ -223,11 +235,6 @@ class UnderscoreEnhancer
     return unless sexpNeedsEnhancing sexp
     clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
   end
-
-  def enhanceClass(clas)
-    
-  end
-
 end
 
 # Next test case: it has to be the closest fcall to vcall_. calls with args to the _vcall,

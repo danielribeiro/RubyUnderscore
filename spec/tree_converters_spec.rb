@@ -84,6 +84,10 @@ class Input
     [0].mapProc idblock _.to_s
   end
 
+  def nested_enhancement_on_matrix
+    [[[:a00], [:a01]], [[:a10], [:a11]]].each(_.each(_.push(:last)))
+  end
+
 end
 
 class Expected
@@ -119,6 +123,10 @@ class Expected
   def call_fcall_mix
     [0].mapProc idblock { |x| x.to_s }
   end
+
+  def nested_enhancement_on_matrix
+    [[[:a00], [:a01]], [[:a10], [:a11]]].each { |x| x.each { |x| x.push(:last)} }
+  end
 end
 
 describe 'TreeConverters' do
@@ -145,8 +153,18 @@ describe 'TreeConverters' do
     un.needsEnhancing(Checks, :alsoNeedsEnhacing).should be_true
   end
 
-  [:simple, :methodCall, :longComplexMethodChain, :nested,
-    :fcall, :multiple_fcall, :fcall_call_mix, :call_fcall_mix].each do |m|
+
+  it "can count correctly how many vcalls need to be enhanced" do
+    sexp = un.sexpOf Input, :nested_enhancement_on_matrix
+    un.sexpEnhancingCount(sexp).should == 2
+  end
+
+
+  [:simple, :methodCall, :longComplexMethodChain,
+    :nested, :fcall, :multiple_fcall, :fcall_call_mix,
+    :call_fcall_mix, :nested_enhancement_on_matrix]
+    [:nested_enhancement_on_matrix].
+    each do |m|
     it m.to_s do
       assert_same_after_enhancing m
     end
