@@ -15,7 +15,7 @@ module RubyUnderscore
       end
     end
     def self.included(receiver)
-      receiver.extend         ClassMethods
+      receiver.extend ClassMethods
     end
   end
 end

@@ -4,89 +4,83 @@ require 'sexp_processor'
 require 'ruby2ruby'
 require 'unified_ruby'
 require 'parse_tree'
-
-class AbstractProcessor < SexpProcessor
-  def initialize
-    super
-    @alternate = SexpProcessor.new
-  end
-
-  def proceed(exp)
-    @alternate.process exp
-  end
-
-  def assert_empty(meth, exp, exp_orig)
-
-  end
-end
-
-module EnhancerHelper
-  # Deep Clone or arrays. Focused on arrays to be converted into sexp.
-  def clone(array)
-    a = []
-    array.each do | x |
-      a << if x.is_a? Array
-        clone(x)
-      elsif x.is_a? Symbol or x.is_a? Fixnum
-        x
-      else
-        x.clone
-      end
-    end
-    a
-  end
-
-  def chain(sexp, *processorClasses)
-    processorClasses.inject(sexp) do |memo, clas|
-      clas.new.process memo
-    end
-  end
-
-  def needsEnhancing(clas, method)
-    sexpNeedsEnhancing sexpOf clas, method
-  end
-
-
-  def sexpOf(clas, method)
-    ParseTree.translate clas, method
-  end
-
-  def sexpNeedsEnhancing(sexp)
-    sexpEnhancingCount(sexp) > 0
-  end
-
-  def sexpEnhancingCount(sexp)
-    return 0 if sexp.nil?
-    parser = EnhancerDetector.new
-    parser.process clone sexp
-    return parser.enhanceCount
-  end
-
-  def assertSexpIs(sexp, type)
-    raise "Wrong sexp type: #{sexp.first}" unless sexp.first == type
-  end
-
-  class EnhancerDetector < AbstractProcessor
-    attr_reader :enhanceCount
-
+module RubyUnderscore
+  class AbstractProcessor < SexpProcessor
     def initialize
       super
-      @enhanceCount = 0
+      @alternate = SexpProcessor.new
     end
 
-    def process_vcall(sexp)
-      @enhanceCount += 1 if sexp[1] == :_
-      return s *sexp
+    def proceed(exp)
+      @alternate.process exp
+    end
+
+    def assert_empty(meth, exp, exp_orig)
+
     end
   end
-end
+
+  module EnhancerHelper
+    # Deep Clone or arrays. Focused on arrays to be converted into sexp.
+    def clone(array)
+      a = []
+      array.each do | x |
+        a << if x.is_a? Array
+          clone(x)
+        elsif x.is_a? Symbol or x.is_a? Fixnum
+          x
+        else
+          x.clone
+        end
+      end
+      a
+    end
+
+    def chain(sexp, *processorClasses)
+      processorClasses.inject(sexp) do |memo, clas|
+        clas.new.process memo
+      end
+    end
+
+    def needsEnhancing(clas, method)
+      sexpNeedsEnhancing sexpOf clas, method
+    end
 
 
+    def sexpOf(clas, method)
+      ParseTree.translate clas, method
+    end
 
-class VcallEnhancer < AbstractProcessor
-  attr_accessor :vcallCount
-  include EnhancerHelper
-  public :s
+    def sexpNeedsEnhancing(sexp)
+      sexpEnhancingCount(sexp) > 0
+    end
+
+    def sexpEnhancingCount(sexp)
+      return 0 if sexp.nil?
+      parser = EnhancerDetector.new
+      parser.process clone sexp
+      return parser.enhanceCount
+    end
+
+    def assertSexpIs(sexp, type)
+      raise "Wrong sexp type: #{sexp.first}" unless sexp.first == type
+    end
+
+    class EnhancerDetector < AbstractProcessor
+      attr_reader :enhanceCount
+
+      def initialize
+        super
+        @enhanceCount = 0
+      end
+
+      def process_vcall(sexp)
+        @enhanceCount += 1 if sexp[1] == :_
+        return s *sexp
+      end
+    end
+  end
+
   class AbstractSexp
     attr_reader :sexp, :enhancer
 
@@ -175,7 +169,7 @@ class VcallEnhancer < AbstractProcessor
     def type
       :call
     end
-    
+
     def deconstruct(sexp)
       @target, @method, @args = sexp
     end
@@ -185,49 +179,55 @@ class VcallEnhancer < AbstractProcessor
     end
   end
 
-  def initialize
-    super
-    self.vcallCount = nil
+
+  class VcallEnhancer < AbstractProcessor
+    attr_accessor :vcallCount
+    include EnhancerHelper
+    public :s
+
+    def initialize
+      super
+      self.vcallCount = nil
+    end
+
+    def variableName
+      :"__vcall_enhancer_i"
+    end
+
+
+    def process_vcall(sexp)
+      return s *sexp unless sexp[1] == :_
+      s(:dvar, variableName)
+    end
+
+    def process_call(sexp)
+      changeGenericCall sexp
+    end
+
+    def process_fcall(sexp)
+      changeGenericCall sexp
+    end
+
+    def changeGenericCall(sexp)
+      sexpClass(sexp.first).new(sexp, self).enhance
+    end
+    protected
+
+    def sexpClass(type)
+      return Call if type == :call
+      return Fcall if type == :fcall
+      raise "Unknown sexp: #{type}"
+    end
   end
 
-  def variableName
-    :"__vcall_enhancer_i"
-  end
 
+  class UnderscoreEnhancer
+    include EnhancerHelper
 
-  def process_vcall(sexp)
-    return s *sexp unless sexp[1] == :_
-    s(:dvar, variableName)
-  end
-
-  def process_call(sexp)
-    changeGenericCall sexp
-  end
-
-  def process_fcall(sexp)
-    changeGenericCall sexp
-  end
-
-  def changeGenericCall(sexp)
-    sexpClass(sexp.first).new(sexp, self).enhance
-  end
-
-  protected
-  def sexpClass(type)
-    return Call if type == :call
-    return Fcall if type == :fcall
-    raise "Unknown sexp: #{type}"
-  end
-
-end
-
-
-class UnderscoreEnhancer
-  include EnhancerHelper
-
-  def enhance(clas, method)
-    sexp = sexpOf clas, method
-    return unless sexpNeedsEnhancing sexp
-    clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
+    def enhance(clas, method)
+      sexp = sexpOf clas, method
+      return unless sexpNeedsEnhancing sexp
+      clas.class_eval chain sexp, VcallEnhancer, Unifier, Ruby2Ruby
+    end
   end
 end

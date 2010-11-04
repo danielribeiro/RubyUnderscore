@@ -2,7 +2,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'tree_converters'
 
 # Making it simple to test.
-class VcallEnhancer
+class RubyUnderscore::VcallEnhancer
   def variableName
     :x
   end
@@ -142,7 +142,7 @@ describe 'TreeConverters' do
   attr_reader :un
 
   before(:each) do
-    @un = UnderscoreEnhancer.new
+    @un = RubyUnderscore::UnderscoreEnhancer.new
   end
 
   def assert_same_after_enhancing(method)
