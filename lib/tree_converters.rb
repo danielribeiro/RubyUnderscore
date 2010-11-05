@@ -27,7 +27,7 @@ module RubyUnderscore
       array.each do | x |
         a << if x.is_a? Array
           clone(x)
-        elsif x.is_a? Symbol or x.is_a? Fixnum
+        elsif x.is_a? Symbol or x.is_a? Fixnum or x.is_a? Regexp
           x
         else
           x.clone

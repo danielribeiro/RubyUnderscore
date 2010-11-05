@@ -18,22 +18,18 @@ you see simple blocks such as:
     dates.select { |d| d.greater_than(old_date) }
     classes.reject { |c| c.subclasses.include?(Array) }
 
-Other languages, such as Scala, Clojure and Groovy, have [mechanisms](http://github.com/jashkenas/coffee-script/issues/issue/739/#comment_450208) to write such closures
-in a terser way. RubyUnderscore changes the source of classes so that you can also use a
-short notation for simple closures. With such, the above examples can be written as:
+RubyUnderscore modify classes so that you can also use a short notation for simple closures. With such, the above examples can be written as:
 
     collection.map _.invoke
     dates.select _.greater_than old_date
     classes.reject _.subclasses.include? Array
 
 Just replace the iterating argument with the underscore symbol (*_*), and ditch the
-parenthesis.
+parenthesis. [More info](http://metaphysicaldeveloper.wordpress.com/2010/10/31/rubyunderscore-a-bit-of-arc-and-scala-in-ruby/)
 
-*Note:* The first case can also use symbol to proc coercion (appending *&* to symbol):
+Quick Example
+----
 
-    collection.map &:invoke
-
-However, this is not flexible enough to allow arguments or invoke a method chain.
 
 
 Meta
