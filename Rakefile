@@ -14,7 +14,7 @@ begin
     gem.name = "rubyunderscore"
     gem.summary = %Q{Simple way to create simple blocks}
     gem.description = %Q{It allows you to create simple blocks by using underscore symbol}
-    gem.email = "danrbr+rubyunderscore@gmail.com"
+    gem.email = "danrbr@gmail.com"
     gem.homepage = "http://github.com/danielribeiro/RubyUnderscore"
     gem.authors = ["Daniel Ribeiro"]
     gem.add_dependency 'ParseTree', '=3.0.5'
