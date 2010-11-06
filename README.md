@@ -29,7 +29,25 @@ parenthesis. [More info](http://metaphysicaldeveloper.wordpress.com/2010/10/31/r
 
 Quick Example
 ----
+The example consists of getting all instance methods of String, Array, Class that end with 'd?'
 
+    require 'ruby_underscore'
+
+    class MethodFinder
+      include RubyUnderscore::Base
+
+      def find_interrogation_methods
+        [String, Array, Class].map(_.public_instance_methods.grep /d\?$/).flatten.sort.uniq
+      end
+    end
+    p MethodFinder.new.find_interrogation_methods
+
+
+Using Ruby Underscore
+----
+As in the example above, simply by including the module include RubyUnderscore::Base on the
+class, all methods (class methods as well) will allow you to use the underscore symbol to
+write simple blocks.
 
 
 Meta
