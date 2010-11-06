@@ -7,34 +7,34 @@ require 'rake/testtask'
 require 'spec/rake/spectask'
 
 task :default => [:spec]
-spec = Gem::Specification.new do |s|
-  s.name = 'RubyUnderscore'
-  s.version = '0.0.1'
-  s.has_rdoc = true
-  s.extra_rdoc_files = ['README']
-  s.summary = 'Your summary here'
-  s.description = s.summary
-  s.author = ''
-  s.email = ''
-  # s.executables = ['your_executable_here']
-  s.files = %w(LICENSE README Rakefile) + Dir.glob("{bin,lib,spec}/**/*")
-  s.require_path = "lib"
-  s.bindir = "bin"
+
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name = "rubyunderscore"
+    gem.summary = %Q{Simple way to create simple blocks}
+    gem.description = %Q{It allows you to create simple blocks by using underscore symbol}
+    gem.email = "danrbr+rubyunderscore@gmail.com"
+    gem.homepage = "http://github.com/danielribeiro/RubyUnderscore"
+    gem.authors = ["Daniel Ribeiro"]
+    gem.add_dependency 'ParseTree', '=3.0.5'
+    gem.add_dependency 'ruby2ruby'
+#    gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
+    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+  end
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
 
-Rake::GemPackageTask.new(spec) do |p|
-  p.gem_spec = spec
-  p.need_tar = true
-  p.need_zip = true
-end
-
+require 'rake/rdoctask'
 Rake::RDocTask.new do |rdoc|
-  files =['README', 'LICENSE', 'lib/**/*.rb']
-  rdoc.rdoc_files.add(files)
-  rdoc.main = "README.md" # page to start on
-  rdoc.title = "RubyUnderscore Docs"
-  rdoc.rdoc_dir = 'doc/rdoc' # rdoc output folder
-  rdoc.options << '--line-numbers'
+  version = File.exist?('VERSION') ? File.read('VERSION') : ""
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "rubyunderscore #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
 Spec::Rake::SpecTask.new do |t|
