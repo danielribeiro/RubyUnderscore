@@ -17,16 +17,12 @@ Gem::Specification.new do |s|
      "TODO"
   ]
   s.files = [
-    ".gitignore",
-     "README.md",
+    "README.md",
      "Rakefile",
      "TODO",
      "VERSION",
-     "example.rb",
      "lib/ruby_underscore.rb",
-     "lib/tree_converters.rb",
-     "spec/ruby_underscore_spec.rb",
-     "spec/tree_converters_spec.rb"
+     "lib/tree_converters.rb"
   ]
   s.homepage = %q{http://github.com/danielribeiro/RubyUnderscore}
   s.rdoc_options = ["--charset=UTF-8"]

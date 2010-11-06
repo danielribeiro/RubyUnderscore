@@ -19,6 +19,7 @@ begin
     gem.authors = ["Daniel Ribeiro"]
     gem.add_dependency 'ParseTree', '=3.0.5'
     gem.add_dependency 'ruby2ruby'
+    gem.files = FileList["[A-Z]*", "{bin,lib}/**/*"]
 #    gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
