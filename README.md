@@ -14,14 +14,15 @@ However, as you decompose more and more your iterations into a sequence of
 [reduces](http://ruby-doc.org/core-1.8.7/classes/Enumerable.html#M001148), more commonly
 you see simple blocks such as:
 
-    collection.map { |x| x.invoke }
+    
     dates.select { |d| d.greater_than(old_date) }
+    collection.map { |x| x.invoke }
     classes.reject { |c| c.subclasses.include?(Array) }
 
 RubyUnderscore modify classes so that you can also use a short notation for simple closures. With such, the above examples can be written as:
-
-    collection.map _.invoke
+    
     dates.select _.greater_than old_date
+    collection.map _.invoke
     classes.reject _.subclasses.include? Array
 
 Just replace the iterating argument with the underscore symbol (*_*), and ditch the
