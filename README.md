@@ -54,7 +54,7 @@ write simple blocks.
 Meta
 ----
 
-Created by Daniel Ribeiro
+Created by [Daniel Ribeiro](http://metaphysicaldeveloper.wordpress.com/about-me)
 
 Released under the MIT License: http://www.opensource.org/licenses/mit-license.php
 
