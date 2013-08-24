@@ -14,16 +14,19 @@ However, as you decompose more and more your iterations into a sequence of
 [reduces](http://ruby-doc.org/core-1.8.7/classes/Enumerable.html#M001148), more commonly
 you see simple blocks such as:
 
-    
-    dates.select { |d| d.greater_than(old_date) }
-    collection.map { |x| x.invoke }
-    classes.reject { |c| c.subclasses.include?(Array) }
+```ruby
+dates.select { |d| d.greater_than(old_date) }
+collection.map { |x| x.invoke }
+classes.reject { |c| c.subclasses.include?(Array) }
+```
 
 RubyUnderscore modify classes so that you can also use a short notation for simple closures. With such, the above examples can be written as:
     
-    dates.select _.greater_than old_date
-    collection.map _.invoke
-    classes.reject _.subclasses.include? Array
+```ruby        
+dates.select _.greater_than old_date
+collection.map _.invoke
+classes.reject _.subclasses.include? Array
+```
 
 Just replace the iterating argument with the underscore symbol (*_*), and ditch the
 parenthesis. [More info](http://metaphysicaldeveloper.wordpress.com/2010/10/31/rubyunderscore-a-bit-of-arc-and-scala-in-ruby/)
@@ -32,17 +35,18 @@ Quick Example
 ----
 The example consists of getting all instance methods of String, Array, Class that end with 'd?'
 
-    require 'ruby_underscore'
+```ruby
+require 'ruby_underscore'
 
-    class MethodFinder
-      include RubyUnderscore::Base
+class MethodFinder
+  include RubyUnderscore::Base
 
-      def find_interrogation_methods
-        [String, Array, Class].map(_.public_instance_methods.grep /d\?$/).flatten.sort.uniq
-      end
-    end
-    p MethodFinder.new.find_interrogation_methods
-
+  def find_interrogation_methods
+    [String, Array, Class].map(_.public_instance_methods.grep /d\?$/).flatten.sort.uniq
+  end
+end
+p MethodFinder.new.find_interrogation_methods
+```
 
 Using Ruby Underscore
 ----
